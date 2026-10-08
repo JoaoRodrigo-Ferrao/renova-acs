@@ -40,10 +40,10 @@
     header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       gap: 12px;
       margin-bottom: 20px;
-      padding: 12px 16px;
+      padding: 14px 16px;
       background: #ffffff;
       border-radius: 12px;
       border: 1px solid var(--border);
@@ -52,55 +52,11 @@
       top: 0;
       z-index: 100;
     }
-    .header-brand { display: flex; align-items: center; gap: 12px; }
+    .header-brand { display: flex; align-items: center; gap: 12px; text-align: center; }
     .header-logo { flex-shrink: 0; }
-    .header-titles h1 { font-size: 1.2rem; margin: 0; color: var(--text); font-weight: 800; line-height: 1.1; text-align: left; }
+    .header-titles h1 { font-size: 1.25rem; margin: 0; color: var(--text); font-weight: 800; line-height: 1.1; }
     .header-titles h1 span { color: var(--primary); }
-    .header-titles span.subtitle { font-size: 0.72rem; color: #64748b; font-weight: 600; display: block; margin-top: 2px; }
-
-    /* MENU HAMBÚRGUER (TOP BAR) */
-    .btn-menu-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f1f5f9;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      width: 40px;
-      height: 40px;
-      font-size: 1.2rem;
-      cursor: pointer;
-      color: var(--text);
-    }
-
-    /* DROPDOWN MENU SUPORTE NO TOPO */
-    .top-menu-dropdown {
-      display: none;
-      position: absolute;
-      top: 65px;
-      right: 16px;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-      width: 220px;
-      overflow: hidden;
-      z-index: 200;
-    }
-    .top-menu-dropdown.active { display: block; }
-    .top-menu-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 16px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text);
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-    }
-    .top-menu-item:last-child { border-bottom: none; }
-    .top-menu-item:hover { background: #f8fafc; color: var(--primary); }
+    .header-titles span.subtitle { font-size: 0.75rem; color: #64748b; font-weight: 600; display: block; margin-top: 2px; }
 
     /* NAVEGAÇÃO INFERIOR ESTILO APP (BOTTOM NAV) */
     .bottom-nav {
@@ -131,7 +87,7 @@
       background: none;
       border: none;
       color: #64748b;
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 600;
       cursor: pointer;
       transition: color 0.15s ease;
@@ -214,7 +170,7 @@
 </head>
 <body>
 
-  <!-- CABEÇALHO RESPONSIVO COM MENU DROPDOWN -->
+  <!-- CABEÇALHO DA APLICAÇÃO (SEM MENU HAMBÚRGUER) -->
   <header>
     <div class="header-brand">
       <div class="header-logo">
@@ -231,22 +187,6 @@
       <div class="header-titles">
         <h1>Renova<span>ACS</span></h1>
         <span class="subtitle">Gestão de Receitas de Microárea</span>
-      </div>
-    </div>
-
-    <!-- BOTÃO HAMBÚRGUER -->
-    <button class="btn-menu-toggle" onclick="toggleTopMenu()" aria-label="Abrir Menu">☰</button>
-
-    <!-- MENU DROPDOWN -->
-    <div id="top-menu" class="top-menu-dropdown">
-      <div class="top-menu-item" onclick="switchTab('geral'); toggleTopMenu();">
-        <span>📋</span> Lista Geral por Mês
-      </div>
-      <div class="top-menu-item" onclick="switchTab('consulta'); toggleTopMenu();">
-        <span>🔍</span> Busca de Paciente
-      </div>
-      <div class="top-menu-item" onclick="switchTab('cadastro'); toggleTopMenu();">
-        <span>➕</span> Nova Receita
       </div>
     </div>
   </header>
@@ -288,7 +228,7 @@
     </form>
   </div>
 
-  <!-- NAVEGAÇÃO INFERIOR PARA CELULARES (BOTTOM NAV) -->
+  <!-- BARRA DE NAVEGAÇÃO EXCLUSIVA NO RODAPÉ (BOTTOM NAV) -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="switchTab('geral')">
       <span class="icon">📋</span>
@@ -351,11 +291,6 @@
     if (!localStorage.getItem('versao_multi_med_v1')) {
       localStorage.removeItem('receitas_db');
       localStorage.setItem('versao_multi_med_v1', 'true');
-    }
-
-    function toggleTopMenu() {
-      const menu = document.getElementById('top-menu');
-      menu.classList.toggle('active');
     }
 
     function formatarTexto(texto) {
@@ -768,14 +703,6 @@
         container.appendChild(card);
       });
     }
-
-    document.addEventListener('click', function(event) {
-      const menu = document.getElementById('top-menu');
-      const button = document.querySelector('.btn-menu-toggle');
-      if (menu && button && !menu.contains(event.target) && !button.contains(event.target)) {
-        menu.classList.remove('active');
-      }
-    });
 
     initFiltros();
     adicionarBlocoMedicamento('med-container-cadastro');
