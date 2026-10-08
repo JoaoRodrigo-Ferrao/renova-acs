@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>RenovaACS — Gestão de Receitas de Microárea</title>
   <style>
     :root {
@@ -15,16 +15,17 @@
       --border: #e2e8f0;
       --accent-bg: #eff6ff;
       --accent-text: #1d4ed8;
+      --bottom-nav-height: 64px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 16px; max-width: 800px; margin: 0 auto; }
+    body { background-color: var(--bg); color: var(--text); padding: 16px; padding-bottom: calc(var(--bottom-nav-height) + 20px); max-width: 800px; margin: 0 auto; }
 
-    /* CABEÇALHO / BRANDING */
+    /* CABEÇALHO / BRANDING RESPONSIVO */
     header {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
       gap: 12px;
       margin-bottom: 20px;
       padding: 12px 16px;
@@ -32,16 +33,98 @@
       border-radius: 12px;
       border: 1px solid var(--border);
       box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
+    .header-brand { display: flex; align-items: center; gap: 12px; }
     .header-logo { flex-shrink: 0; }
-    .header-titles h1 { font-size: 1.3rem; margin: 0; color: var(--text); font-weight: 800; line-height: 1.1; text-align: left; }
+    .header-titles h1 { font-size: 1.2rem; margin: 0; color: var(--text); font-weight: 800; line-height: 1.1; text-align: left; }
     .header-titles h1 span { color: var(--primary); }
-    .header-titles span.subtitle { font-size: 0.75rem; color: #64748b; font-weight: 600; display: block; margin-top: 2px; }
+    .header-titles span.subtitle { font-size: 0.72rem; color: #64748b; font-weight: 600; display: block; margin-top: 2px; }
 
-    /* ABAS DE NAVEGAÇÃO */
-    .tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
-    .tab-btn { flex: 1; min-width: 110px; padding: 10px 8px; border: none; background: #e2e8f0; border-radius: 8px; font-weight: bold; cursor: pointer; color: #64748b; font-size: 0.85rem; text-align: center; white-space: nowrap; }
-    .tab-btn.active { background: var(--primary); color: white; }
+    /* MENU HAMBÚRGUER (TOP BAR) */
+    .btn-menu-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    /* DROPDOWN MENU SUPORTE NO TOPO */
+    .top-menu-dropdown {
+      display: none;
+      position: absolute;
+      top: 65px;
+      right: 16px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      width: 220px;
+      overflow: hidden;
+      z-index: 200;
+    }
+    .top-menu-dropdown.active { display: block; }
+    .top-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .top-menu-item:last-child { border-bottom: none; }
+    .top-menu-item:hover { background: #f8fafc; color: var(--primary); }
+
+    /* NAVEGAÇÃO INFERIOR ESTILO APP (BOTTOM NAV) */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--bottom-nav-height);
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+      z-index: 999;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      height: 100%;
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.15s ease;
+      padding: 6px 0;
+    }
+
+    .nav-item .icon { font-size: 1.3rem; }
+    .nav-item.active { color: var(--primary); font-weight: 800; }
 
     .tab-content { display: none; }
     .tab-content.active { display: block; }
@@ -54,13 +137,13 @@
     .med-block { background: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; position: relative; }
     .med-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: bold; color: var(--primary); font-size: 0.9rem; }
     .btn-remove-med { background: #fee2e2; color: #ef4444; border: none; border-radius: 4px; padding: 2px 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
-    .btn-add-med { display: block; width: 100%; padding: 10px; background: #e0e7ff; color: #3730a3; border: 1px dashed #6366f1; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; margin-bottom: 16px; }
+    .btn-add-med { display: block; width: 100%; padding: 12px; background: #e0e7ff; color: #3730a3; border: 1px dashed #6366f1; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; margin-bottom: 16px; }
 
-    button.btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 8px; }
+    button.btn-submit { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 8px; }
     button.btn-submit:hover { background: var(--primary-hover); }
 
     .filter-group { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; justify-content: space-between; }
-    .filter-group label { margin-bottom: 0; font-weight: bold; font-size: 1rem; }
+    .filter-group label { margin-bottom: 0; font-weight: bold; font-size: 0.95rem; }
     select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; background: white; min-width: 120px; }
 
     .search-group { margin-bottom: 16px; }
@@ -71,24 +154,24 @@
     .card h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 10px; padding-right: 60px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
     .card-actions { position: absolute; top: 14px; right: 14px; display: flex; gap: 6px; }
     
-    .btn-action { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 2px 4px; border-radius: 4px; }
+    .btn-action { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 4px 6px; border-radius: 4px; }
     .btn-action:hover { background: #f1f5f9; }
     .btn-delete { color: #ef4444; font-weight: bold; }
 
     .med-item-card { border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 10px; }
     .med-item-card:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
     .med-item-card p { font-size: 0.875rem; color: #475569; margin-bottom: 4px; }
-    .date-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-weight: bold; padding: 4px 8px; border-radius: 6px; margin-top: 4px; font-size: 0.8rem; }
+    .date-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-weight: bold; padding: 6px 10px; border-radius: 6px; margin-top: 4px; font-size: 0.8rem; }
     
     .empty-msg { text-align: center; color: #94a3b8; font-style: italic; padding: 20px 0; font-size: 0.95rem; }
 
     /* LISTA ANUAL POR MÊS */
     .month-section { background: white; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-    .month-header { background: var(--accent-bg); color: var(--accent-text); padding: 12px 16px; font-weight: bold; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+    .month-header { background: var(--accent-bg); color: var(--accent-text); padding: 12px 16px; font-weight: bold; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
     .month-badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
     .month-body { padding: 12px; }
 
-    .item-row { padding: 10px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; gap: 8px; position: relative; cursor: pointer; border-radius: 6px; transition: background 0.15s ease; }
+    .item-row { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; gap: 8px; position: relative; cursor: pointer; border-radius: 6px; }
     .item-row:hover { background: #f1f5f9; }
     .item-row:last-child { border-bottom: none; }
     .item-info { flex: 1; }
@@ -96,54 +179,62 @@
     .item-med { font-size: 0.85rem; color: #475569; }
     .item-day { font-weight: bold; color: var(--primary); background: #eff6ff; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; white-space: nowrap; }
 
-    .btn-clear-all { display: block; margin: 24px auto 8px; background: none; border: 1px solid #ef4444; color: #ef4444; padding: 10px 18px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: background 0.2s ease; }
-    .btn-clear-all:hover { background: #fef2f2; }
+    .btn-clear-all { display: block; margin: 24px auto 8px; background: none; border: 1px solid #ef4444; color: #ef4444; padding: 10px 18px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
 
     /* MODAIS */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
     .modal-overlay.active { display: flex; }
-    .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 12px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); position: relative; max-height: 90vh; overflow-y: auto; animation: modalFadeIn 0.2s ease-out; }
-    @keyframes modalFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 12px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); position: relative; max-height: 90vh; overflow-y: auto; }
     .modal-close { position: absolute; top: 14px; right: 16px; background: #f1f5f9; border: none; font-size: 1.2rem; font-weight: bold; color: #64748b; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .modal-title { font-size: 1.2rem; font-weight: bold; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
     
     .modal-med-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
     .modal-field { margin-bottom: 8px; }
     .modal-field:last-child { margin-bottom: 0; }
-    .modal-label { font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.5px; }
+    .modal-label { font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 700; }
     .modal-value { font-size: 0.95rem; color: var(--text); font-weight: 500; margin-top: 2px; }
     
-    .btn-edit-modal { margin-top: 14px; width: 100%; padding: 10px; background: #e2e8f0; border: none; border-radius: 6px; font-weight: bold; color: var(--text); cursor: pointer; }
-    .btn-edit-modal:hover { background: #cbd5e1; }
+    .btn-edit-modal { margin-top: 14px; width: 100%; padding: 12px; background: #e2e8f0; border: none; border-radius: 6px; font-weight: bold; color: var(--text); cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <!-- CABEÇALHO DA MARCA (RenovaACS) -->
+  <!-- CABEÇALHO RESPONSIVO COM MENU DROPDOWN -->
   <header>
-    <div class="header-logo">
-      <svg width="40" height="40" viewBox="0 0 512 512">
-        <rect width="512" height="512" rx="112" fill="#2563eb"/>
-        <rect x="128" y="128" width="256" height="300" rx="24" fill="#ffffff"/>
-        <rect x="176" y="88" width="160" height="48" rx="12" fill="#059669"/>
-        <rect x="176" y="200" width="160" height="20" rx="10" fill="#e2e8f0"/>
-        <rect x="176" y="248" width="110" height="20" rx="10" fill="#e2e8f0"/>
-        <circle cx="300" cy="330" r="50" fill="#059669"/>
-        <path d="M280 330 L295 345 L320 315" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      </svg>
+    <div class="header-brand">
+      <div class="header-logo">
+        <svg width="36" height="36" viewBox="0 0 512 512">
+          <rect width="512" height="512" rx="112" fill="#2563eb"/>
+          <rect x="128" y="128" width="256" height="300" rx="24" fill="#ffffff"/>
+          <rect x="176" y="88" width="160" height="48" rx="12" fill="#059669"/>
+          <rect x="176" y="200" width="160" height="20" rx="10" fill="#e2e8f0"/>
+          <rect x="176" y="248" width="110" height="20" rx="10" fill="#e2e8f0"/>
+          <circle cx="300" cy="330" r="50" fill="#059669"/>
+          <path d="M280 330 L295 345 L320 315" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="header-titles">
+        <h1>Renova<span>ACS</span></h1>
+        <span class="subtitle">Gestão de Receitas de Microárea</span>
+      </div>
     </div>
-    <div class="header-titles">
-      <h1>Renova<span>ACS</span></h1>
-      <span class="subtitle">Gestão de Receitas de Microárea</span>
+
+    <!-- BOTÃO HAMBÚRGUER -->
+    <button class="btn-menu-toggle" onclick="toggleTopMenu()" aria-label="Abrir Menu">☰</button>
+
+    <!-- MENU DROPDOWN (QUANDO CLICADO NO ☰) -->
+    <div id="top-menu" class="top-menu-dropdown">
+      <div class="top-menu-item" onclick="switchTab('geral'); toggleTopMenu();">
+        <span>📋</span> Lista Geral por Mês
+      </div>
+      <div class="top-menu-item" onclick="switchTab('consulta'); toggleTopMenu();">
+        <span>🔍</span> Busca de Paciente
+      </div>
+      <div class="top-menu-item" onclick="switchTab('cadastro'); toggleTopMenu();">
+        <span>➕</span> Nova Receita
+      </div>
     </div>
   </header>
-
-  <!-- Abas de Navegação -->
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('geral')">📋 Lista Geral por Mês</button>
-    <button class="tab-btn" onclick="switchTab('consulta')">🔍 Busca de Paciente</button>
-    <button class="tab-btn" onclick="switchTab('cadastro')">➕ Nova Receita</button>
-  </div>
 
   <!-- ABA 1: VISÃO GERAL ANUAL -->
   <div id="tab-geral" class="tab-content active">
@@ -155,10 +246,10 @@
     <div id="container-geral"></div>
   </div>
 
-  <!-- ABA 2: CONSULTA INDIVIDUAL (BUSCA DIRETA E GLOBAL) -->
+  <!-- ABA 2: CONSULTA INDIVIDUAL -->
   <div id="tab-consulta" class="tab-content">
     <div class="search-group">
-      <input type="text" id="search-consulta" class="search-input" placeholder="🔍 Digite o nome do paciente ou do medicamento..." oninput="renderizarRelatorio()">
+      <input type="text" id="search-consulta" class="search-input" placeholder="🔍 Digite o nome do paciente ou do remédio..." oninput="renderizarRelatorio()">
     </div>
 
     <div id="lista-receitas"></div>
@@ -182,7 +273,23 @@
     </form>
   </div>
 
-  <!-- MODAL FLUTUANTE (PERFIL DO PACIENTE) -->
+  <!-- NAVEGAÇÃO INFERIOR PARA CELULARES (BOTTOM NAV) -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('geral')">
+      <span class="icon">📋</span>
+      <span>Geral</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('consulta')">
+      <span class="icon">🔍</span>
+      <span>Buscar</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('cadastro')">
+      <span class="icon">➕</span>
+      <span>Novo</span>
+    </button>
+  </nav>
+
+  <!-- MODAL PERFIL -->
   <div id="modal-perfil" class="modal-overlay" onclick="fecharModal(event, 'modal-perfil')">
     <div class="modal-card">
       <button class="modal-close" onclick="fecharModalForcado('modal-perfil')">&times;</button>
@@ -190,14 +297,12 @@
         <span>👤</span>
         <span id="modal-nome">Ficha do Paciente</span>
       </div>
-
       <div id="modal-meds-container"></div>
-
       <button class="btn-edit-modal" id="btn-modal-editar">✏️ Editar Informações</button>
     </div>
   </div>
 
-  <!-- MODAL FLUTUANTE (EDIÇÃO DE PACIENTE) -->
+  <!-- MODAL EDIÇÃO -->
   <div id="modal-editar" class="modal-overlay" onclick="fecharModal(event, 'modal-editar')">
     <div class="modal-card">
       <button class="modal-close" onclick="fecharModalForcado('modal-editar')">&times;</button>
@@ -233,6 +338,11 @@
       localStorage.setItem('versao_multi_med_v1', 'true');
     }
 
+    function toggleTopMenu() {
+      const menu = document.getElementById('top-menu');
+      menu.classList.toggle('active');
+    }
+
     function formatarTexto(texto) {
       if (!texto) return '';
       const excecoes = ['de', 'da', 'do', 'das', 'dos', 'e', 'em'];
@@ -241,9 +351,7 @@
         .toLowerCase()
         .split(/\s+/)
         .map((palavra, index) => {
-          if (index > 0 && excecoes.includes(palavra)) {
-            return palavra;
-          }
+          if (index > 0 && excecoes.includes(palavra)) return palavra;
           return palavra.charAt(0).toUpperCase() + palavra.slice(1);
         })
         .join(' ');
@@ -267,19 +375,20 @@
     }
 
     function switchTab(tabName) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      const navItems = document.querySelectorAll('.nav-item');
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      navItems.forEach(item => item.classList.remove('active'));
 
       if (tabName === 'geral') {
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        navItems[0].classList.add('active');
         document.getElementById('tab-geral').classList.add('active');
         renderizarVisaoGeral();
       } else if (tabName === 'consulta') {
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        navItems[1].classList.add('active');
         document.getElementById('tab-consulta').classList.add('active');
         renderizarRelatorio();
       } else {
-        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        navItems[2].classList.add('active');
         document.getElementById('tab-cadastro').classList.add('active');
         
         const container = document.getElementById('med-container-cadastro');
@@ -287,9 +396,10 @@
           adicionarBlocoMedicamento('med-container-cadastro');
         }
       }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    /* GERENCIADOR DE BLOCOS DINÂMICOS DE MEDICAMENTOS */
     function adicionarBlocoMedicamento(containerId, dados = null) {
       const container = document.getElementById(containerId);
       const index = container.children.length + 1;
@@ -339,7 +449,6 @@
       return remedios;
     }
 
-    // Calcula a próxima data de renovação com base na última receita e intervalo
     function calcularProximaRenovacao(dataInicioStr, intervaloMeses) {
       if (!dataInicioStr) return null;
       const [ano, mes, dia] = dataInicioStr.split('-').map(Number);
@@ -413,7 +522,6 @@
       }
     }
 
-    /* MODAIS */
     function abrirPerfil(id) {
       const receitas = getReceitas();
       const p = receitas.find(r => r.id === id);
@@ -589,7 +697,6 @@
       }
     }
 
-    /* RENDERIZAÇÃO DA BUSCA GLOBAL E INDIVIDUAL DE PACIENTES */
     function renderizarRelatorio() {
       const searchInput = document.getElementById('search-consulta');
       const termoBusca = searchInput ? searchInput.value.toLowerCase().trim() : '';
@@ -646,6 +753,15 @@
         container.appendChild(card);
       });
     }
+
+    // Fechar menu dropdown ao clicar fora
+    document.addEventListener('click', function(event) {
+      const menu = document.getElementById('top-menu');
+      const button = document.querySelector('.btn-menu-toggle');
+      if (menu && button && !menu.contains(event.target) && !button.contains(event.target)) {
+        menu.classList.remove('active');
+      }
+    });
 
     initFiltros();
     adicionarBlocoMedicamento('med-container-cadastro');
