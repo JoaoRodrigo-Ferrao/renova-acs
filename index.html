@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RenovaACS — Gestão de Receitas de Microárea</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --secondary: #059669;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --border: #e2e8f0;
+      --accent-bg: #eff6ff;
+      --accent-text: #1d4ed8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 16px; max-width: 800px; margin: 0 auto; }
+
+    /* CABEÇALHO / BRANDING */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 12px 16px;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .header-logo { flex-shrink: 0; }
+    .header-titles h1 { font-size: 1.3rem; margin: 0; color: var(--text); font-weight: 800; line-height: 1.1; text-align: left; }
+    .header-titles h1 span { color: var(--primary); }
+    .header-titles span.subtitle { font-size: 0.75rem; color: #64748b; font-weight: 600; display: block; margin-top: 2px; }
+
+    /* ABAS DE NAVEGAÇÃO */
+    .tabs { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+    .tab-btn { flex: 1; min-width: 110px; padding: 10px 8px; border: none; background: #e2e8f0; border-radius: 8px; font-weight: bold; cursor: pointer; color: #64748b; font-size: 0.85rem; text-align: center; white-space: nowrap; }
+    .tab-btn.active { background: var(--primary); color: white; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* FORMULÁRIOS E CAMPOS */
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 4px; }
+    input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; }
+    
+    .med-block { background: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; position: relative; }
+    .med-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: bold; color: var(--primary); font-size: 0.9rem; }
+    .btn-remove-med { background: #fee2e2; color: #ef4444; border: none; border-radius: 4px; padding: 2px 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
+    .btn-add-med { display: block; width: 100%; padding: 10px; background: #e0e7ff; color: #3730a3; border: 1px dashed #6366f1; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; margin-bottom: 16px; }
+
+    button.btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 8px; }
+    button.btn-submit:hover { background: var(--primary-hover); }
+
+    .filter-group { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; justify-content: space-between; }
+    .filter-group label { margin-bottom: 0; font-weight: bold; font-size: 1rem; }
+    select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; background: white; min-width: 120px; }
+
+    .search-group { margin-bottom: 16px; }
+    .search-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+
+    /* CARDS DE PACIENTES */
+    .card { background: var(--card-bg); padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; }
+    .card h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 10px; padding-right: 60px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px; }
+    .card-actions { position: absolute; top: 14px; right: 14px; display: flex; gap: 6px; }
+    
+    .btn-action { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 2px 4px; border-radius: 4px; }
+    .btn-action:hover { background: #f1f5f9; }
+    .btn-delete { color: #ef4444; font-weight: bold; }
+
+    .med-item-card { border-top: 1px dashed var(--border); padding-top: 10px; margin-top: 10px; }
+    .med-item-card:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+    .med-item-card p { font-size: 0.875rem; color: #475569; margin-bottom: 4px; }
+    .date-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-weight: bold; padding: 4px 8px; border-radius: 6px; margin-top: 4px; font-size: 0.8rem; }
+    
+    .empty-msg { text-align: center; color: #94a3b8; font-style: italic; padding: 20px 0; font-size: 0.95rem; }
+
+    /* LISTA ANUAL POR MÊS */
+    .month-section { background: white; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .month-header { background: var(--accent-bg); color: var(--accent-text); padding: 12px 16px; font-weight: bold; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+    .month-badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+    .month-body { padding: 12px; }
+
+    .item-row { padding: 10px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; gap: 8px; position: relative; cursor: pointer; border-radius: 6px; transition: background 0.15s ease; }
+    .item-row:hover { background: #f1f5f9; }
+    .item-row:last-child { border-bottom: none; }
+    .item-info { flex: 1; }
+    .item-name { font-weight: bold; font-size: 0.95rem; color: var(--text); }
+    .item-med { font-size: 0.85rem; color: #475569; }
+    .item-day { font-weight: bold; color: var(--primary); background: #eff6ff; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; white-space: nowrap; }
+
+    .btn-clear-all { display: block; margin: 24px auto 8px; background: none; border: 1px solid #ef4444; color: #ef4444; padding: 10px 18px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: background 0.2s ease; }
+    .btn-clear-all:hover { background: #fef2f2; }
+
+    /* MODAIS */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 1000; justify-content: center; align-items: center; padding: 16px; }
+    .modal-overlay.active { display: flex; }
+    .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 12px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); position: relative; max-height: 90vh; overflow-y: auto; animation: modalFadeIn 0.2s ease-out; }
+    @keyframes modalFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-close { position: absolute; top: 14px; right: 16px; background: #f1f5f9; border: none; font-size: 1.2rem; font-weight: bold; color: #64748b; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .modal-title { font-size: 1.2rem; font-weight: bold; color: var(--primary); margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    
+    .modal-med-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+    .modal-field { margin-bottom: 8px; }
+    .modal-field:last-child { margin-bottom: 0; }
+    .modal-label { font-size: 0.75rem; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.5px; }
+    .modal-value { font-size: 0.95rem; color: var(--text); font-weight: 500; margin-top: 2px; }
+    
+    .btn-edit-modal { margin-top: 14px; width: 100%; padding: 10px; background: #e2e8f0; border: none; border-radius: 6px; font-weight: bold; color: var(--text); cursor: pointer; }
+    .btn-edit-modal:hover { background: #cbd5e1; }
+  </style>
+</head>
+<body>
+
+  <!-- CABEÇALHO DA MARCA (RenovaACS) -->
+  <header>
+    <div class="header-logo">
+      <svg width="40" height="40" viewBox="0 0 512 512">
+        <rect width="512" height="512" rx="112" fill="#2563eb"/>
+        <rect x="128" y="128" width="256" height="300" rx="24" fill="#ffffff"/>
+        <rect x="176" y="88" width="160" height="48" rx="12" fill="#059669"/>
+        <rect x="176" y="200" width="160" height="20" rx="10" fill="#e2e8f0"/>
+        <rect x="176" y="248" width="110" height="20" rx="10" fill="#e2e8f0"/>
+        <circle cx="300" cy="330" r="50" fill="#059669"/>
+        <path d="M280 330 L295 345 L320 315" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="header-titles">
+      <h1>Renova<span>ACS</span></h1>
+      <span class="subtitle">Gestão de Receitas de Microárea</span>
+    </div>
+  </header>
+
+  <!-- Abas de Navegação -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('geral')">📋 Lista Geral por Mês</button>
+    <button class="tab-btn" onclick="switchTab('consulta')">🔍 Busca de Paciente</button>
+    <button class="tab-btn" onclick="switchTab('cadastro')">➕ Nova Receita</button>
+  </div>
+
+  <!-- ABA 1: VISÃO GERAL ANUAL -->
+  <div id="tab-geral" class="tab-content active">
+    <div class="filter-group">
+      <label for="filter-ano-geral">Selecione o Ano:</label>
+      <select id="filter-ano-geral" onchange="renderizarVisaoGeral()"></select>
+    </div>
+
+    <div id="container-geral"></div>
+  </div>
+
+  <!-- ABA 2: CONSULTA INDIVIDUAL (BUSCA DIRETA E GLOBAL) -->
+  <div id="tab-consulta" class="tab-content">
+    <div class="search-group">
+      <input type="text" id="search-consulta" class="search-input" placeholder="🔍 Digite o nome do paciente ou do medicamento..." oninput="renderizarRelatorio()">
+    </div>
+
+    <div id="lista-receitas"></div>
+
+    <button class="btn-clear-all" onclick="limparTudo()">🗑️ Apagar Todos os Cadastros</button>
+  </div>
+
+  <!-- ABA 3: CADASTRO DE RECEITA -->
+  <div id="tab-cadastro" class="tab-content">
+    <form id="recipe-form" onsubmit="salvarReceita(event)">
+      <div class="form-group">
+        <label for="nome">Nome do Paciente *</label>
+        <input type="text" id="nome" required placeholder="Ex: João da Silva">
+      </div>
+
+      <div id="med-container-cadastro"></div>
+
+      <button type="button" class="btn-add-med" onclick="adicionarBlocoMedicamento('med-container-cadastro')">➕ Adicionar Outro Medicamento</button>
+
+      <button type="submit" class="btn-submit">Salvar Cadastro</button>
+    </form>
+  </div>
+
+  <!-- MODAL FLUTUANTE (PERFIL DO PACIENTE) -->
+  <div id="modal-perfil" class="modal-overlay" onclick="fecharModal(event, 'modal-perfil')">
+    <div class="modal-card">
+      <button class="modal-close" onclick="fecharModalForcado('modal-perfil')">&times;</button>
+      <div class="modal-title">
+        <span>👤</span>
+        <span id="modal-nome">Ficha do Paciente</span>
+      </div>
+
+      <div id="modal-meds-container"></div>
+
+      <button class="btn-edit-modal" id="btn-modal-editar">✏️ Editar Informações</button>
+    </div>
+  </div>
+
+  <!-- MODAL FLUTUANTE (EDIÇÃO DE PACIENTE) -->
+  <div id="modal-editar" class="modal-overlay" onclick="fecharModal(event, 'modal-editar')">
+    <div class="modal-card">
+      <button class="modal-close" onclick="fecharModalForcado('modal-editar')">&times;</button>
+      <div class="modal-title">
+        <span>✏️</span>
+        <span>Editar Paciente</span>
+      </div>
+
+      <form id="edit-form" onsubmit="salvarEdicao(event)">
+        <input type="hidden" id="edit-id">
+        <div class="form-group">
+          <label for="edit-nome">Nome do Paciente *</label>
+          <input type="text" id="edit-nome" required>
+        </div>
+
+        <div id="med-container-editar"></div>
+
+        <button type="button" class="btn-add-med" onclick="adicionarBlocoMedicamento('med-container-editar')">➕ Adicionar Outro Medicamento</button>
+
+        <button type="submit" class="btn-submit">Atualizar Dados</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const nomesMeses = [
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ];
+
+    if (!localStorage.getItem('versao_multi_med_v1')) {
+      localStorage.removeItem('receitas_db');
+      localStorage.setItem('versao_multi_med_v1', 'true');
+    }
+
+    function formatarTexto(texto) {
+      if (!texto) return '';
+      const excecoes = ['de', 'da', 'do', 'das', 'dos', 'e', 'em'];
+      return texto
+        .trim()
+        .toLowerCase()
+        .split(/\s+/)
+        .map((palavra, index) => {
+          if (index > 0 && excecoes.includes(palavra)) {
+            return palavra;
+          }
+          return palavra.charAt(0).toUpperCase() + palavra.slice(1);
+        })
+        .join(' ');
+    }
+
+    function getReceitas() {
+      const data = localStorage.getItem('receitas_db');
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveReceitas(receitas) {
+      localStorage.setItem('receitas_db', JSON.stringify(receitas));
+    }
+
+    function limparTudo() {
+      if (confirm("Tem certeza de que deseja apagar todos os pacientes cadastrados? Esta ação não pode ser desfeita.")) {
+        localStorage.removeItem('receitas_db');
+        renderizarVisaoGeral();
+        renderizarRelatorio();
+      }
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      if (tabName === 'geral') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('tab-geral').classList.add('active');
+        renderizarVisaoGeral();
+      } else if (tabName === 'consulta') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('tab-consulta').classList.add('active');
+        renderizarRelatorio();
+      } else {
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.getElementById('tab-cadastro').classList.add('active');
+        
+        const container = document.getElementById('med-container-cadastro');
+        if (container.children.length === 0) {
+          adicionarBlocoMedicamento('med-container-cadastro');
+        }
+      }
+    }
+
+    /* GERENCIADOR DE BLOCOS DINÂMICOS DE MEDICAMENTOS */
+    function adicionarBlocoMedicamento(containerId, dados = null) {
+      const container = document.getElementById(containerId);
+      const index = container.children.length + 1;
+
+      const medBlock = document.createElement('div');
+      medBlock.className = 'med-block';
+      medBlock.innerHTML = `
+        <div class="med-block-header">
+          <span>💊 Medicamento #${index}</span>
+          ${container.children.length > 0 ? `<button type="button" class="btn-remove-med" onclick="this.closest('.med-block').remove()">Remover</button>` : ''}
+        </div>
+        <div class="form-group">
+          <label>Nome do Medicamento *</label>
+          <input type="text" class="med-remedio" required placeholder="Ex: Losartana 50mg" value="${dados ? dados.remedio : ''}">
+        </div>
+        <div class="form-group">
+          <label>Modo de Administração *</label>
+          <input type="text" class="med-admin" required placeholder="Ex: 1 comprimido pela manhã" value="${dados ? dados.administracao : ''}">
+        </div>
+        <div class="form-group">
+          <label>Data da Última Receita Feita *</label>
+          <input type="date" class="med-data" required value="${dados ? dados.dataInicio : ''}">
+        </div>
+        <div class="form-group">
+          <label>Frequência de Renovação (em meses) *</label>
+          <input type="number" class="med-intervalo" min="1" required placeholder="Ex: 2" value="${dados ? dados.intervalo : ''}">
+        </div>
+      `;
+
+      container.appendChild(medBlock);
+    }
+
+    function extrairMedicamentosDoContainer(containerId) {
+      const container = document.getElementById(containerId);
+      const blocos = container.querySelectorAll('.med-block');
+      const remedios = [];
+
+      blocos.forEach(b => {
+        remedios.push({
+          remedio: formatarTexto(b.querySelector('.med-remedio').value),
+          administracao: formatarTexto(b.querySelector('.med-admin').value),
+          dataInicio: b.querySelector('.med-data').value,
+          intervalo: parseInt(b.querySelector('.med-intervalo').value)
+        });
+      });
+
+      return remedios;
+    }
+
+    // Calcula a próxima data de renovação com base na última receita e intervalo
+    function calcularProximaRenovacao(dataInicioStr, intervaloMeses) {
+      if (!dataInicioStr) return null;
+      const [ano, mes, dia] = dataInicioStr.split('-').map(Number);
+      
+      const hoje = new Date();
+      let cursorAno = ano;
+      let cursorMes = mes;
+
+      while (
+        cursorAno < hoje.getFullYear() || 
+        (cursorAno === hoje.getFullYear() && cursorMes < (hoje.getMonth() + 1))
+      ) {
+        cursorMes += intervaloMeses;
+        while (cursorMes > 12) {
+          cursorMes -= 12;
+          cursorAno += 1;
+        }
+      }
+
+      const diaStr = String(dia).padStart(2, '0');
+      const mesStr = String(cursorMes).padStart(2, '0');
+      return `${diaStr}/${mesStr}/${cursorAno}`;
+    }
+
+    function initFiltros() {
+      const selectAnoGeral = document.getElementById('filter-ano-geral');
+      const anoAtual = new Date().getFullYear();
+
+      for (let i = anoAtual; i <= anoAtual + 5; i++) {
+        const optionG = document.createElement('option');
+        optionG.value = i;
+        optionG.textContent = i;
+        selectAnoGeral.appendChild(optionG);
+      }
+    }
+
+    function salvarReceita(e) {
+      e.preventDefault();
+
+      const medicamentos = extrairMedicamentosDoContainer('med-container-cadastro');
+      if (medicamentos.length === 0) {
+        alert("Adicione ao menos um medicamento.");
+        return;
+      }
+
+      const novaReceita = {
+        id: Date.now(),
+        nome: formatarTexto(document.getElementById('nome').value),
+        medicamentos: medicamentos
+      };
+
+      const receitas = getReceitas();
+      receitas.push(novaReceita);
+      saveReceitas(receitas);
+
+      document.getElementById('recipe-form').reset();
+      document.getElementById('med-container-cadastro').innerHTML = '';
+      adicionarBlocoMedicamento('med-container-cadastro');
+
+      alert('Cadastro realizado com sucesso!');
+      switchTab('geral');
+    }
+
+    function deletarReceita(id) {
+      if (confirm("Deseja remover este paciente e todos os seus medicamentos cadastrados?")) {
+        let receitas = getReceitas();
+        receitas = receitas.filter(r => r.id !== id);
+        saveReceitas(receitas);
+        renderizarVisaoGeral();
+        renderizarRelatorio();
+      }
+    }
+
+    /* MODAIS */
+    function abrirPerfil(id) {
+      const receitas = getReceitas();
+      const p = receitas.find(r => r.id === id);
+      if (!p) return;
+
+      document.getElementById('modal-nome').textContent = p.nome;
+      const container = document.getElementById('modal-meds-container');
+      container.innerHTML = '';
+
+      p.medicamentos.forEach((m, idx) => {
+        const [ano, mes, dia] = m.dataInicio.split('-');
+        const dataFormatada = `${dia}/${mes}/${ano}`;
+        const proximaData = calcularProximaRenovacao(m.dataInicio, m.intervalo);
+
+        const box = document.createElement('div');
+        box.className = 'modal-med-box';
+        box.innerHTML = `
+          <div class="modal-field">
+            <div class="modal-label">Medicamento #${idx + 1}</div>
+            <div class="modal-value">💊 <strong>${m.remedio}</strong></div>
+          </div>
+          <div class="modal-field">
+            <div class="modal-label">Modo de Administração</div>
+            <div class="modal-value">${m.administracao}</div>
+          </div>
+          <div class="modal-field">
+            <div class="modal-label">Última Receita Feita</div>
+            <div class="modal-value">${dataFormatada}</div>
+          </div>
+          <div class="modal-field">
+            <div class="modal-label">Próxima Renovação</div>
+            <div class="modal-value">📅 ${proximaData} (A cada ${m.intervalo} mês/meses)</div>
+          </div>
+        `;
+        container.appendChild(box);
+      });
+
+      document.getElementById('btn-modal-editar').onclick = () => {
+        fecharModalForcado('modal-perfil');
+        abrirEdicao(id);
+      };
+
+      document.getElementById('modal-perfil').classList.add('active');
+    }
+
+    function abrirEdicao(id) {
+      const receitas = getReceitas();
+      const p = receitas.find(r => r.id === id);
+      if (!p) return;
+
+      document.getElementById('edit-id').value = p.id;
+      document.getElementById('edit-nome').value = p.nome;
+
+      const container = document.getElementById('med-container-editar');
+      container.innerHTML = '';
+
+      p.medicamentos.forEach(m => {
+        adicionarBlocoMedicamento('med-container-editar', m);
+      });
+
+      document.getElementById('modal-editar').classList.add('active');
+    }
+
+    function salvarEdicao(e) {
+      e.preventDefault();
+
+      const id = parseInt(document.getElementById('edit-id').value);
+      let receitas = getReceitas();
+
+      const medicamentos = extrairMedicamentosDoContainer('med-container-editar');
+      if (medicamentos.length === 0) {
+        alert("Adicione ao menos um medicamento.");
+        return;
+      }
+      
+      const index = receitas.findIndex(r => r.id === id);
+      if (index !== -1) {
+        receitas[index] = {
+          id: id,
+          nome: formatarTexto(document.getElementById('edit-nome').value),
+          medicamentos: medicamentos
+        };
+
+        saveReceitas(receitas);
+        fecharModalForcado('modal-editar');
+        renderizarVisaoGeral();
+        renderizarRelatorio();
+        alert('Cadastro atualizado com sucesso!');
+      }
+    }
+
+    function fecharModal(event, modalId) {
+      if (event.target.id === modalId) {
+        document.getElementById(modalId).classList.remove('active');
+      }
+    }
+
+    function fecharModalForcado(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function renderizarVisaoGeral() {
+      const selectAnoGeral = document.getElementById('filter-ano-geral');
+      if (!selectAnoGeral.value) return;
+
+      const anoAlvo = parseInt(selectAnoGeral.value);
+      const container = document.getElementById('container-geral');
+      container.innerHTML = '';
+
+      const receitas = getReceitas();
+
+      for (let mes = 1; mes <= 12; mes++) {
+        const itensDoMes = [];
+
+        receitas.forEach(r => {
+          r.medicamentos.forEach(m => {
+            const [anoOrigem, mesOrigem, diaOrigem] = m.dataInicio.split('-').map(Number);
+            let cursorAno = anoOrigem;
+            let cursorMes = mesOrigem;
+
+            while (cursorAno < anoAlvo || (cursorAno === anoAlvo && cursorMes <= mes)) {
+              if (cursorAno === anoAlvo && cursorMes === mes) {
+                itensDoMes.push({
+                  id: r.id,
+                  nome: r.nome,
+                  remedio: m.remedio,
+                  administracao: m.administracao,
+                  dia: String(diaOrigem).padStart(2, '0')
+                });
+                break;
+              }
+
+              cursorMes += m.intervalo;
+              while (cursorMes > 12) {
+                cursorMes -= 12;
+                cursorAno += 1;
+              }
+            }
+          });
+        });
+
+        itensDoMes.sort((a, b) => parseInt(a.dia) - parseInt(b.dia));
+
+        const monthSection = document.createElement('div');
+        monthSection.className = 'month-section';
+
+        let bodyHTML = '';
+        if (itensDoMes.length === 0) {
+          bodyHTML = '<div class="empty-msg">Nenhuma receita para renovar neste mês.</div>';
+        } else {
+          bodyHTML = itensDoMes.map(item => `
+            <div class="item-row" onclick="abrirPerfil(${item.id})">
+              <div class="item-info">
+                <div class="item-name">👤 ${item.nome}</div>
+                <div class="item-med">💊 ${item.remedio} — <small>${item.administracao}</small></div>
+              </div>
+              <div class="item-day">Dia ${item.dia}</div>
+            </div>
+          `).join('');
+        }
+
+        monthSection.innerHTML = `
+          <div class="month-header">
+            <span>📅 ${nomesMeses[mes - 1]} de ${anoAlvo}</span>
+            <span class="month-badge">${itensDoMes.length} ${itensDoMes.length === 1 ? 'item' : 'itens'}</span>
+          </div>
+          <div class="month-body">
+            ${bodyHTML}
+          </div>
+        `;
+
+        container.appendChild(monthSection);
+      }
+    }
+
+    /* RENDERIZAÇÃO DA BUSCA GLOBAL E INDIVIDUAL DE PACIENTES */
+    function renderizarRelatorio() {
+      const searchInput = document.getElementById('search-consulta');
+      const termoBusca = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+      const container = document.getElementById('lista-receitas');
+      container.innerHTML = '';
+
+      const receitas = getReceitas();
+
+      if (receitas.length === 0) {
+        container.innerHTML = '<p class="empty-msg">Nenhum paciente cadastrado no sistema.</p>';
+        return;
+      }
+
+      const pacientesFiltrados = receitas.filter(r => {
+        if (!termoBusca) return true;
+        const bateuNome = r.nome.toLowerCase().includes(termoBusca);
+        const bateuRemedio = r.medicamentos.some(m => m.remedio.toLowerCase().includes(termoBusca));
+        return bateuNome || bateuRemedio;
+      });
+
+      if (pacientesFiltrados.length === 0) {
+        container.innerHTML = '<p class="empty-msg">Nenhum paciente ou medicamento encontrado para esta busca.</p>';
+        return;
+      }
+
+      pacientesFiltrados.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        let medsHTML = r.medicamentos.map(m => {
+          const [anoOrigem, mesOrigem, diaOrigem] = m.dataInicio.split('-');
+          const dataUltimaFormato = `${diaOrigem}/${mesOrigem}/${anoOrigem}`;
+          const proximaData = calcularProximaRenovacao(m.dataInicio, m.intervalo);
+
+          return `
+            <div class="med-item-card">
+              <p>💊 <strong>Medicamento:</strong> ${m.remedio}</p>
+              <p>📋 <strong>Modo de Uso:</strong> ${m.administracao}</p>
+              <p>🕒 <strong>Última receita feita:</strong> ${dataUltimaFormato}</p>
+              <div class="date-badge">📅 Próxima Renovação: ${proximaData} (A cada ${m.intervalo} mês/meses)</div>
+            </div>
+          `;
+        }).join('');
+
+        card.innerHTML = `
+          <div class="card-actions">
+            <button class="btn-action" onclick="abrirEdicao(${r.id})" title="Editar Paciente">✏️</button>
+            <button class="btn-action btn-delete" onclick="deletarReceita(${r.id})" title="Excluir Paciente">✕</button>
+          </div>
+          <h3>👤 ${r.nome}</h3>
+          ${medsHTML}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    initFiltros();
+    adicionarBlocoMedicamento('med-container-cadastro');
+    renderizarVisaoGeral();
+    renderizarRelatorio();
+  </script>
+</body>
+</html>
